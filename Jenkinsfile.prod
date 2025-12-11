@@ -1,0 +1,23 @@
+pipeline {
+    // Restrict this pipeline to run only on the 'PROD' labeled agent
+    agent { label 'PROD' }
+
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout Master Branch') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Deploy to Prod Server') {
+            steps {
+                echo "Copying files to the production server workspace..."
+                // Example command to move files to your prod web directory
+                sh 'cp -R * /var/www/production-site/'
+            }
+        }
+    }
+}
