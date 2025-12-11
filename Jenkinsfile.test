@@ -1,0 +1,25 @@
+pipeline {
+    // Restrict this pipeline to run only on the 'TEST' labeled agent
+    agent { label 'TEST' }
+
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout Test Branch') {
+            steps {
+                // Checkout the SCM configured in the job (which targets the 'test' branch)
+                checkout scm
+            }
+        }
+        stage('Deploy to Test Server') {
+            steps {
+                echo "Copying files to the test server workspace..."
+                // Use standard shell commands to copy files within the agent's machine
+                sh 'cp -R * /var/www/test-site/'
+                // Or better, use a plugin like 'Publish Over SSH' configured globally
+            }
+        }
+    }
+}
