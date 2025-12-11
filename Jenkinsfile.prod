@@ -1,5 +1,4 @@
 pipeline {
-    // Restrict this pipeline to run only on the 'PROD' labeled agent
     agent { label 'PROD' }
 
     triggers {
@@ -14,8 +13,13 @@ pipeline {
         }
         stage('Deploy to Prod Server') {
             steps {
+                echo "Ensuring target deployment directory exists..."
+                
+                // Add this line to create the directory if it doesn't exist (-p flag)
+                sh 'mkdir -p /var/www/production-site/'
+
                 echo "Copying files to the production server workspace..."
-                // Example command to move files to your prod web directory
+                // The 'cp' command will now succeed
                 sh 'cp -R * /var/www/production-site/'
             }
         }
