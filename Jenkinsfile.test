@@ -17,6 +17,10 @@ pipeline {
             steps {
                 echo "Copying files to the test server workspace..."
                 // Use standard shell commands to copy files within the agent's machine
+
+                // Add this line to create the directory if it doesn't exist (-p flag)
+                sh 'mkdir -p /var/www/test-site/'
+
                 sh 'cp -R * /var/www/test-site/'
                 // Or better, use a plugin like 'Publish Over SSH' configured globally
             }
