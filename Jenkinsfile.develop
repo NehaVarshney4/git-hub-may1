@@ -1,0 +1,46 @@
+pipeline {
+    // We orchestrate the stages from the master, running specific stages on specific agents
+    agent none
+
+    triggers {
+        // This listens for the push event from GitHub
+        githubPush() 
+    }
+
+    stages {
+        stage('Deploy to Test Node') {
+            // This stage runs entirely on the node labeled 'TEST'
+            agent { 
+                label 'TEST' 
+            }
+            steps {
+                echo "--- Starting deployment to TEST server ---"
+                // Checkout the SCM details defined in the Jenkins job config (develop branch)
+                checkout scm 
+
+                sh 'mkdir -p /var/www/test-site/'
+                sh 'cp -R * /var/www/test-site/'
+                echo "Deployment to TEST node complete."
+            }
+        }
+
+        stage('Deploy to Production Node') {
+            // This stage runs entirely on the node labeled 'PROD' only after 'TEST' succeeds
+            agent { 
+                label 'PROD' 
+            }
+            // A manual gate can be added here if needed:
+            // input "Approve deployment of tested build to Production?"
+
+            steps {
+                echo "--- Starting deployment to PRODUCTION server ---"
+                // The checkout command ensures we deploy the exact same commit that was tested
+                checkout scm 
+                
+                sh 'mkdir -p /var/www/production-site/'
+                sh 'cp -R * /var/www/production-site/'
+                echo "Deployment to PROD node complete."
+            }
+        }
+    }
+}
