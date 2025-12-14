@@ -25,20 +25,23 @@ pipeline {
         }
 
         stage('Deploy to Production Node') {
-            // This stage runs entirely on the node labeled 'PROD' only after 'TEST' succeeds
             agent { 
                 label 'PROD' 
             }
-            // A manual gate can be added here if needed:
-            // input "Approve deployment of tested build to Production?"
-
             steps {
-                echo "--- Starting deployment to PRODUCTION server ---"
-                // The checkout command ensures we deploy the exact same commit that was tested
-                checkout scm 
-                
+                echo "Ensuring target deployment directory exists and is owned by Jenkins user..."
+                // Ensure directory is created and permissions are set correctly first
                 sh 'mkdir -p /var/www/production-site/'
-                sh 'cp -R * /var/www/production-site/'
+                sh 'sudo chown -R ubuntu:ubuntu /var/www/production-site/' 
+
+                echo "Copying application files (excluding .git) to the production server..."
+                
+                // Use rsync for a more robust sync or find to exclude .git
+                // A simple shell script workaround:
+                sh '''
+                rsync -av --exclude='.git*' . /var/www/production-site/
+                '''
+
                 echo "Deployment to PROD node complete."
             }
         }
