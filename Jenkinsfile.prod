@@ -23,5 +23,27 @@ pipeline {
                 sh 'cp -R * /var/www/production-site/'
             }
         }
+        stage('Deploy to Production Node') {
+            agent { 
+                label 'PROD' 
+            }
+            steps {
+                echo "Ensuring target deployment directory exists and is owned by Jenkins user..."
+                // Ensure directory is created and permissions are set correctly first
+                sh 'mkdir -p /var/www/production-site/'
+                sh 'sudo chown -R ubuntu:ubuntu /var/www/production-site/' 
+
+                echo "Copying application files (excluding .git) to the production server..."
+                
+                // Use rsync for a more robust sync or find to exclude .git
+                // A simple shell script workaround:
+                sh '''
+                rsync -av --exclude='.git*' . /var/www/production-site/
+                '''
+
+                echo "Deployment to PROD node complete."
+            }
+        }
     }
+
 }
